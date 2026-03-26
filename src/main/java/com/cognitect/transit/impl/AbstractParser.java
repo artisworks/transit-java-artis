@@ -14,6 +14,12 @@ import java.util.Map;
 
 public abstract class AbstractParser implements Parser {
 
+    // Debug flag — set to true via reflection or nREPL when nil-payload bug triggers
+    public static volatile boolean DEBUG_PAYLOAD = false;
+
+    // Debug log callback — set to a java.util.function.Consumer<String> to capture logs
+    public static volatile java.util.function.Consumer<String> DEBUG_LOG_FN = null;
+
     private static final ThreadLocal<SimpleDateFormat> dateTimeFormat =
         new ThreadLocal<SimpleDateFormat>() {
             @Override protected SimpleDateFormat initialValue() {

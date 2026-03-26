@@ -16,6 +16,20 @@ public class JsonParser extends AbstractParser {
 
     private final com.fasterxml.jackson.core.JsonParser jp;
 
+    // set to true for just the first parseVal call when parsing :payload's value
+    private boolean logNextParseVal = false;
+
+    private static void debugLog(String msg) {
+        java.util.function.Consumer<String> fn = DEBUG_LOG_FN;
+        if (fn != null) {
+            fn.accept(msg);
+        }
+    }
+
+    private static boolean isPayloadKey(Object key) {
+        return key != null && ":payload".equals(key.toString());
+    }
+
     public JsonParser(com.fasterxml.jackson.core.JsonParser jp,
                       Map<String, ReadHandler<?,?>> handlers,
                       DefaultReadHandler<?> defaultHandler,
@@ -49,7 +63,13 @@ public class JsonParser extends AbstractParser {
     @Override
     public Object parseVal(boolean asMapKey, ReadCache cache) throws IOException {
 
-        switch(jp.getCurrentToken()) {
+        JsonToken token = jp.getCurrentToken();
+        if (DEBUG_PAYLOAD && logNextParseVal) {
+            logNextParseVal = false;
+            debugLog("[transit-debug parseVal] token=" + token);
+        }
+
+        switch(token) {
             case START_OBJECT:
                 return parseMap(asMapKey, cache, null);
             case START_ARRAY:
@@ -109,7 +129,17 @@ public class JsonParser extends AbstractParser {
                 return val;
             } else {
                 jp.nextToken(); // advance to read value
-                mb = mr.add(mb, key, parseVal(false, cache));
+                if (DEBUG_PAYLOAD && isPayloadKey(key)) {
+                    JsonToken valToken = jp.getCurrentToken();
+                    logNextParseVal = true;
+                    Object val = parseVal(false, cache);
+                    debugLog("[transit-debug parseMap] key=:payload token=" + valToken
+                        + " val-null=" + (val == null)
+                        + " val-type=" + (val == null ? "null" : val.getClass().getName()));
+                    mb = mr.add(mb, key, val);
+                } else {
+                    mb = mr.add(mb, key, parseVal(false, cache));
+                }
             }
         }
 
