@@ -134,6 +134,7 @@ public class JsonParser extends AbstractParser {
                     logNextParseVal = true;
                     Object val = parseVal(false, cache);
                     debugLog("[transit-debug parseMap] key=:payload token=" + valToken
+                        + " key-class=" + key.getClass().getName()
                         + " val-null=" + (val == null)
                         + " val-type=" + (val == null ? "null" : val.getClass().getName()));
                     mb = mr.add(mb, key, val);
