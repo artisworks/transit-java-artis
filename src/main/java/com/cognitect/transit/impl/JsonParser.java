@@ -66,7 +66,7 @@ public class JsonParser extends AbstractParser {
         JsonToken token = jp.getCurrentToken();
         if (DEBUG_PAYLOAD && logNextParseVal) {
             logNextParseVal = false;
-            debugLog("[transit-debug parseVal] token=" + token);
+            debugLog("[transit-debug parseVal] token=" + token + " text=" + jp.getText());
         }
 
         switch(token) {

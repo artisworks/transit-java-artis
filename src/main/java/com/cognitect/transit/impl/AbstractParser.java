@@ -58,7 +58,16 @@ public abstract class AbstractParser implements Parser {
 
         ReadHandler<Object, Object> d = getHandler(tag);
         if(d != null) {
-            return d.fromRep(rep);
+            Object result = d.fromRep(rep);
+            if (DEBUG_PAYLOAD && ":".equals(tag) && "payload".equals(rep)) {
+                java.util.function.Consumer<String> fn = DEBUG_LOG_FN;
+                if (fn != null) {
+                    fn.accept("[transit-debug decode] tag=: handler=" + d.getClass().getName()
+                        + " result-class=" + (result == null ? "null" : result.getClass().getName())
+                        + " result=" + result);
+                }
+            }
+            return result;
         } else if(defaultHandler != null) {
             return defaultHandler.fromRep(tag, rep);
         } else {
